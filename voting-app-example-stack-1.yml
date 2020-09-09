@@ -59,7 +59,7 @@ services:
         condition: on-failure
 
   worker_service:
-    image: stefandockerid/myprivaterepo:votingapp_worker
+    image: bretfisher/examplevotingapp_worker:java
     networks:
       - frontend
       - backend
