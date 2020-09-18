@@ -1,12 +1,16 @@
 **_This is a work in progress project_**
+
 **Docker-voting-app-example**
+
 This is based on the course [Bret Fisher's: Docker Mastery: with Kubernetes +Swarm from a Docker Captain](https://www.udemy.com/course/docker-mastery/)
 
 **IMPORTANT NOTE**
+
 The images listed in the docker stack file are found in my Docker Hub PRIVATE-REPO (for the moment it's PUBLIC but it's subject to lockdown at anytime!). 
 
 
 **Replace the images for the following services**
+
 If the images listed in the stack file are not accessible due to docker hub private repo lockdown then you may replace the images as it follows:
 
 > redis_service:
@@ -36,6 +40,7 @@ If the images listed in the stack file are not accessible due to docker hub priv
 > docker stack deploy -c voting-app-example-stack-1.yml voteapp
 
 **You should see the following getting created**
+
 Creating network voteapp_default
 Creating network voteapp_frontend
 Creating network voteapp_backend
