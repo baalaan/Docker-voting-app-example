@@ -1,98 +1,60 @@
-version: "3"
+version: '3'
 services:
-
-  redis_service:
-    image: redis:alpine3.12
-    ports:
-      - "6379"
-    networks:
-      - frontend
-    deploy:
-      replicas: 2
-      update_config:
-        parallelism: 2
-        delay: 10s
-      restart_policy:
-        condition: on-failure
-  
-  database_service:
-    image: postgres:9.6
-    volumes:
-      - dbvolume1:/var/lib/postgresql/data
-    networks:
-      - backend
-    environment:
-      - POSTGRES_HOST_AUTH_METHOD=trust
-    deploy:
-      placement:
-        constraints: [node.role == manager]
- 
-  vote_service:
-    image: stefandockerid/myprivaterepo:votingapp_vote
-    ports:
-      - 5000:80
-    networks:
-      - frontend
-    depends_on:
-      - redis_service
-    deploy:
-      replicas: 6
-      update_config:
-        parallelism: 2
-      restart_policy:
-        condition: on-failure
-
-  result_service:
-    image: stefandockerid/myprivaterepo:votingapp_result
-    ports:
-      - 5001:80
-    networks:
-      - backend
-    depends_on:
-      - database_service
-    deploy:
-      replicas: 2
-      update_config:
-        parallelism: 2
-        delay: 10s
-      restart_policy:
-        condition: on-failure
-
-  worker_service:
-    image: bretfisher/examplevotingapp_worker:java
-    networks:
-      - frontend
-      - backend
-    depends_on:
-      - database_service
-      - redis_service
-    deploy:
-      mode: replicated
-      replicas: 3
-      labels: [APP=VOTING]
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-        max_attempts: 3
-        window: 120s
-      placement:
-        constraints: [node.role == manager]
-
-  visualizer_service:
-    image: dockersamples/visualizer
-    ports:
-      - "8080:8080"
-    stop_grace_period: 1m30s
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
-    deploy:
-      placement:
-        constraints: [node.role == manager]
-      replicas: 2
-      
+    redis:
+        image: redis:alpine
+        networks:
+            - frontend
+        deploy:
+          replicas: 3
+    db:
+        image: postgres:9.6
+        volumes:
+            - db-data:/var/lib/postgresql/data
+        environment:
+            - POSTGRES_HOST_AUTH_METHOD=trust
+        networks:
+            - backend
+        deploy:
+          replicas: 2
+          placement:
+            constraints: [node.role == manager]    
+    vote:
+        image: bretfisher/examplevotingapp_vote
+        ports:
+            - '5000:80'
+        networks:
+            - frontend
+        deploy:
+          replicas: 6
+          placement:
+            constraints: [node.role == worker]
+    result:
+        image: bretfisher/examplevotingapp_result
+        ports:
+            - '5001:80'
+        networks:
+            - backend
+    worker:
+        image: bretfisher/examplevotingapp_worker:java
+        networks:
+            - frontend
+            - backend
+        deploy:
+          mode: global
+          replicas: 10
+          placement:
+            constraints: [node.role == worker]
+    visualizer_service:
+        image: dockersamples/visualizer
+        ports: "8080:8080"
+        stop_grace_period: 1m30s
+        volumes:
+            - "/var/run/docker.sock:/var/run/docker.sock"
+        deploy:
+          placement:
+          constraints: [node.role == manager]
 networks:
-  frontend:
-  backend:
-
+    frontend: null
+    backend: null
 volumes:
-  dbvolume1:
+    db-data: null
